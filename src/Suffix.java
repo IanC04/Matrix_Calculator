@@ -1,0 +1,3 @@
+public enum Suffix {
+    FIRST, SECOND, THIRD, FOURTH, FIFTH, SIXTH, SEVENTH, EIGHTH, NINTH, TENTH
+}
