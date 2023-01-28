@@ -2,6 +2,10 @@ import java.util.Scanner;
 
 public class Matrix {
 
+    /**
+     * Immutable class so safe from client changes
+     */
+
     private static class Fraction {
         int numerator, denominator;
 

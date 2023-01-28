@@ -1,4 +1,4 @@
-public class Operations {
+public class MatrixOperations {
     public Matrix add(Matrix A, Matrix B) {
         return addsub(A, B, true);
     }
