@@ -3,19 +3,6 @@ import java.util.Scanner;
 
 public class Matrix {
 
-    int matrixType;
-
-    private enum MatrixTypes {
-        Lower_Triangular(2), Upper_Triangular(4), Diagonal(8), Identity(16), Symmetric(32), Zero(
-                64), Square(128);
-
-        final int flag;
-
-        MatrixTypes(int val) {
-            flag = val;
-        }
-    }
-
 
     final Cell[][] grid;
 
@@ -30,47 +17,8 @@ public class Matrix {
                 grid[i][j] = new Cell(values[(i * cols) + j]);
             }
         }
-        getTypes();
     }
 
-    private void getTypes() {
-        matrixType = 0;
-        MatrixTypes[] typeOfMatrix = MatrixTypes.values();
-        if (MatrixTypes. && numberOfRows != numberOfColumns) {
-            isSquare = false;
-        }
-        for (int i = 0; i < numberOfRows; i++) {
-            for (int j = 0; j < numberOfColumns; j++) {
-                if (i == j) {
-                    if (isIdentity && !getCell(i, j).equals(1)) {
-                        isIdentity = false;
-                    }
-                }
-                if (i != j) {
-                    if ((isIdentity || isDiagonal) && !getCell(i, j).equals(0)){
-                        isIdentity = false;
-                        isDiagonal = false;
-                    }
-                    if (isSymmetric && !getCell(i, j).equals(getCell(j, i))) {
-                        isSymmetric = false;
-                    }
-                }
-                if (i >= j) {
-                    if (isUpper && !getCell(i, j).equals(0)) {
-                        isUpper = false;
-                    }
-                }
-                if (i < j) {
-                    if (isLower && !getCell(i, j).equals(0)) {
-                        isLower = false;
-                    }
-                }
-                if (isZero && !getCell(i, j).equals(0)) {
-                    isZero = false;
-                }
-            }
-        }
-    }
 
     /**
      * Copies other matrix to this matrix
