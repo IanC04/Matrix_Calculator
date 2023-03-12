@@ -1,90 +1,75 @@
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Matrix {
 
-    /**
-     * Immutable class so safe from client changes
-     */
+    int matrixType;
 
-    private static class Fraction {
-        int numerator, denominator;
+    private enum MatrixTypes {
+        Lower_Triangular(2), Upper_Triangular(4), Diagonal(8), Identity(16), Symmetric(32), Zero(
+                64), Square(128);
 
-        private Fraction(String num) {
-            if (num.contains("/")) {
-                numerator = Integer.parseInt(num.substring(0, num.indexOf('/')));
-                denominator = Integer.parseInt(num.substring(num.indexOf('/') + 1));
-            }
-            if (num.contains(".")) {
-                numerator = Integer.parseInt(num.substring(0, num.indexOf('.')));
-                num = num.substring(num.indexOf('.'));
-                do {
-                    denominator *= 10;
-                    numerator *= 10;
-                    num = num.substring(1);
-                } while (num.length() > 0 && num.charAt(0) == '0');
-                numerator += denominator * Integer.parseInt(num.substring(denominator));
-            }
-        }
+        final int flag;
 
-        private Fraction(int integral) {
-            numerator = integral;
-            denominator = 1;
-        }
-
-        private Fraction(int num, int den) {
-            numerator = num;
-            denominator = den;
-            simplify(numerator, denominator);
-            if (denominator < 0) {
-                numerator = ~numerator + 1;
-                denominator = ~denominator + 1;
-            }
-            if (denominator < 0) {
-                throw new IllegalStateException("Denominator is: " + denominator);
-            }
-        }
-
-        private void simplify(int a, int b) {
-            if (b != 0) {
-                simplify(b, a % b);
-            } else {
-                numerator %= a;
-                denominator %= a;
-            }
-        }
-
-        private Fraction add(Fraction other) {
-            int num = numerator * other.denominator + other.numerator * denominator, dem =
-                    denominator * other.denominator;
-            return new Fraction(num, dem);
-        }
-
-        private Fraction subtract(Fraction other) {
-            int num = numerator * other.denominator + -other.numerator * denominator, dem =
-                    denominator * other.denominator;
-            return new Fraction(num, dem);
-        }
-
-        private double getValDec() {
-            return (double) numerator / denominator;
-        }
-
-        private String getValFrac() {
-            return numerator + "/" + denominator;
-        }
-
-        public String toString() {
-            if (numerator == 0 || denominator == 1) {
-                return Integer.toString(numerator);
-            }
-            return numerator + "/" + denominator;
+        MatrixTypes(int val) {
+            flag = val;
         }
     }
 
-    private final Fraction[][] grid;
 
-    public Matrix(int row, int col) {
-        grid = new Fraction[row][col];
+    final Cell[][] grid;
+
+    int numberOfRows, numberOfColumns;
+
+    public Matrix(int rows, int cols, String[] values) {
+        numberOfRows = rows;
+        numberOfColumns = cols;
+        grid = new Cell[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                grid[i][j] = new Cell(values[(i * cols) + j]);
+            }
+        }
+        getTypes();
+    }
+
+    private void getTypes() {
+        matrixType = 0;
+        MatrixTypes[] typeOfMatrix = MatrixTypes.values();
+        if (MatrixTypes. && numberOfRows != numberOfColumns) {
+            isSquare = false;
+        }
+        for (int i = 0; i < numberOfRows; i++) {
+            for (int j = 0; j < numberOfColumns; j++) {
+                if (i == j) {
+                    if (isIdentity && !getCell(i, j).equals(1)) {
+                        isIdentity = false;
+                    }
+                }
+                if (i != j) {
+                    if ((isIdentity || isDiagonal) && !getCell(i, j).equals(0)){
+                        isIdentity = false;
+                        isDiagonal = false;
+                    }
+                    if (isSymmetric && !getCell(i, j).equals(getCell(j, i))) {
+                        isSymmetric = false;
+                    }
+                }
+                if (i >= j) {
+                    if (isUpper && !getCell(i, j).equals(0)) {
+                        isUpper = false;
+                    }
+                }
+                if (i < j) {
+                    if (isLower && !getCell(i, j).equals(0)) {
+                        isLower = false;
+                    }
+                }
+                if (isZero && !getCell(i, j).equals(0)) {
+                    isZero = false;
+                }
+            }
+        }
     }
 
     /**
@@ -93,27 +78,27 @@ public class Matrix {
      * @param other
      */
     public Matrix(Matrix other) {
-        int row = other.grid.length, col = other.grid[0].length;
-        grid = new Fraction[row][col];
-        for (int i = 0; i < row; i++) {
-            System.arraycopy(other.grid[i], 0, grid[i], 0, col);
+        numberOfRows = other.numberOfRows;
+        numberOfColumns = other.numberOfColumns;
+        grid = new Cell[numberOfRows][numberOfColumns];
+        for (int i = 0; i < numberOfRows; i++) {
+            System.arraycopy(other.grid[i], 0, grid[i], 0, numberOfColumns);
         }
     }
 
     public Matrix(Scanner s) {
         System.out.print("How many rows: ");
-        int row = s.nextInt();
+        numberOfRows = s.nextInt();
         System.out.print("How many columns: ");
-        int col = s.nextInt();
+        numberOfColumns = s.nextInt();
         s.nextLine();
-        grid = new Fraction[row][col];
-        for (int i = 0; i < row; i++) {
-            System.out.println(
-                    "Enter numbers of " + Suffix.values()[i] + " row seperated by " + "spaces: ");
+        grid = new Cell[numberOfRows][numberOfColumns];
+        for (int i = 0; i < numberOfRows; i++) {
+            System.out.println("Enter numbers of " + i + " row seperated by " + "spaces: ");
             Scanner line = new Scanner(s.nextLine());
             line.useDelimiter(" +");
-            for (int j = 0; j < col; j++) {
-                grid[i][j] = line.next();
+            for (int j = 0; j < numberOfColumns; j++) {
+                grid[i][j] = new Cell(line.next());
             }
             printMatrix(i + 1);
         }
@@ -132,7 +117,7 @@ public class Matrix {
         byte widest = 0;
         for (int i = 0; i < end; i++) {
             for (int j = 0; j < grid[i].length; j++) {
-                byte width = (byte) Integer.toString(grid[i][j]).length();
+                byte width = (byte) grid[i][j].toString().length();
                 if (width > widest) {
                     widest = width;
                 }

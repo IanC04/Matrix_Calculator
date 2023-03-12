@@ -9,7 +9,7 @@ public class MatrixOperations {
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < col; j++) {
                 mat.grid[i][j] =
-                        add ? grid[i][j] + other.grid[i][j] : grid[i][j] - other.grid[i][j];
+                        add ? A.grid[i][j].add(B.grid[i][j]) : A.grid[i][j].subtract(B.grid[i][j]);
             }
         }
         return mat;
