@@ -97,6 +97,10 @@ public class Cell {
         value = new Fraction(val);
     }
 
+    public Cell(int numerator, int denominator) {
+        value = new Fraction(numerator, denominator);
+    }
+
     public Cell(Fraction val1, Fraction val2) {
         value = val1.add(val2);
     }
@@ -106,7 +110,8 @@ public class Cell {
     }
 
     public Cell add(int r, int c, Cell A, Cell B) {
-        return new Cell(r, c, A.value, B.value);
+        //return new Cell(r, c, A.value, B.value);
+        return null;
     }
 
     public boolean equals(Object other) {

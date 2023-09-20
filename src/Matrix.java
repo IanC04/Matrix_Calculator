@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Matrix {
@@ -6,15 +5,17 @@ public class Matrix {
 
     final Cell[][] grid;
 
-    int numberOfRows, numberOfColumns;
+    int rows, columns;
+    String name;
 
-    public Matrix(int rows, int cols, String[] values) {
-        numberOfRows = rows;
-        numberOfColumns = cols;
+    public Matrix(int rows, int cols, String name) {
+        this.rows = rows;
+        this.columns = cols;
+        this.name = name;
         grid = new Cell[rows][cols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                grid[i][j] = new Cell(values[(i * cols) + j]);
+                grid[i][j] = new Cell();
             }
         }
     }
@@ -26,30 +27,38 @@ public class Matrix {
      * @param other
      */
     public Matrix(Matrix other) {
-        numberOfRows = other.numberOfRows;
-        numberOfColumns = other.numberOfColumns;
-        grid = new Cell[numberOfRows][numberOfColumns];
-        for (int i = 0; i < numberOfRows; i++) {
-            System.arraycopy(other.grid[i], 0, grid[i], 0, numberOfColumns);
+        this.rows = other.rows;
+        columns = other.columns;
+        grid = new Cell[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            System.arraycopy(other.grid[i], 0, grid[i], 0, columns);
         }
     }
 
     public Matrix(Scanner s) {
         System.out.print("How many rows: ");
-        numberOfRows = s.nextInt();
+        this.rows = s.nextInt();
         System.out.print("How many columns: ");
-        numberOfColumns = s.nextInt();
+        columns = s.nextInt();
         s.nextLine();
-        grid = new Cell[numberOfRows][numberOfColumns];
-        for (int i = 0; i < numberOfRows; i++) {
+        grid = new Cell[rows][columns];
+        for (int i = 0; i < rows; i++) {
             System.out.println("Enter numbers of " + i + " row seperated by " + "spaces: ");
             Scanner line = new Scanner(s.nextLine());
             line.useDelimiter(" +");
-            for (int j = 0; j < numberOfColumns; j++) {
+            for (int j = 0; j < columns; j++) {
                 grid[i][j] = new Cell(line.next());
             }
             printMatrix(i + 1);
         }
+    }
+
+    public boolean setCell(int row, int col, Cell cell) {
+        if (row >= 0 && col >= 0 && row < rows && col < columns) {
+            grid[row][col] = cell;
+            return true;
+        }
+        return false;
     }
 
     public Cell getCell(int row, int col) {
