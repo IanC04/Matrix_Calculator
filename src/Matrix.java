@@ -8,6 +8,10 @@ public class Matrix {
     int rows, columns;
     String name;
 
+    public Matrix(int rows, int cols) {
+        this(rows, cols, "");
+    }
+
     public Matrix(int rows, int cols, String name) {
         this.rows = rows;
         this.columns = cols;
@@ -84,7 +88,7 @@ public class Matrix {
         for (int i = 0; i < end; i++) {
             System.out.print('|');
             for (int j = 0; j < grid[i].length; j++) {
-                System.out.printf("%" + widest + "d|", grid[i][j]);
+                System.out.printf("%" + widest + "s|", grid[i][j]);
             }
             System.out.println();
         }
@@ -95,5 +99,8 @@ public class Matrix {
         printMatrix(grid.length);
     }
 
-
+    public String toString() {
+        printMatrix();
+        return null;
+    }
 }

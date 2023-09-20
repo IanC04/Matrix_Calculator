@@ -1,52 +1,58 @@
-/*
 public class MatrixOperations {
-    public Matrix add(Matrix A, Matrix B) {
-        return addsub(A, B, true);
-    }
-
-    public Matrix addsub(Matrix A, Matrix B, boolean add) {
+    public static Matrix add(Matrix A, Matrix B) {
         int row = B.grid.length, col = B.grid[0].length;
         Matrix mat = new Matrix(row, col);
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < col; j++) {
-                mat.grid[i][j] =
-                        add ? A.grid[i][j].add(B.grid[i][j]) : A.grid[i][j].subtract(B.grid[i][j]);
+                mat.grid[i][j] = A.grid[i][j].add(B.grid[i][j]);
             }
         }
         return mat;
     }
 
-    public Matrix subtract(Matrix other) {
-        return addsub(other, false);
+    public static Matrix subtract(Matrix A, Matrix B) {
+        int row = B.grid.length, col = B.grid[0].length;
+        Matrix mat = new Matrix(row, col);
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                mat.grid[i][j] = A.grid[i][j].subtract(B.grid[i][j]);
+            }
+        }
+        return mat;
     }
 
-    public Matrix multiply(Matrix other) {
-        int rowA = grid.length, colA = grid[0].length, rowB = other.grid.length, colB =
-                other.grid[0].length;
+    public static Matrix multiply(Matrix A, Matrix B) {
+        int rowA = A.grid.length, colA = A.grid[0].length, rowB = B.grid.length, colB =
+                B.grid[0].length;
+        if (colA != rowB) {
+            System.err.printf("Cannot multiply matrices of dimensions %dx%d and %dx%d. Must be in form jxm and mxk\n",
+                    rowA, colA, rowB, colB);
+            throw new IllegalArgumentException("Matrices invalid size to be multiplied.");
+        }
         Matrix mat = new Matrix(rowA, colB);
         for (int i = 0; i < rowA; i++) {
-            for (int j = 0; j < colB; j++) {
-                int sum = 0;
-                for (int index = 0; index < colA; index++) {
-                    sum += grid[i][index] * other.grid[index][j];
+            for(int k = 0; k < colB; k++) {
+                Cell sum = new Cell();
+                for (int j = 0; j < colA; j++) {
+                    sum = sum.add(A.grid[i][j].multiply(B.grid[j][k]));
                 }
-                mat.grid[i][j] = sum;
+                mat.grid[i][k] = sum;
             }
         }
         return mat;
     }
 
-    public Matrix getRREF() {
-        Matrix mat = new Matrix(this);
+    public static Matrix getRREF(Matrix A) {
+        System.out.println("Unimplemented");
+        return null;
+        Matrix mat = new Matrix(A);
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid.length; j++) {
-
             }
         }
     }
 
-    public int getDeterminant() {
+    public static int getDeterminant(Matrix A) {
         return 0;
     }
 }
-*/

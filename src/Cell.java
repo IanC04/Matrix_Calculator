@@ -69,6 +69,11 @@ public class Cell {
             return new Fraction(num, dem);
         }
 
+        private Fraction multiply(Fraction other) {
+            int num = numerator * other.numerator, dem = denominator * other.denominator;
+            return new Fraction(num, dem);
+        }
+
         private double getValDec() {
             return (double) numerator / denominator;
         }
@@ -93,6 +98,10 @@ public class Cell {
         this(0);
     }
 
+    public Cell(Cell other) {
+        value = new Fraction(other.value.numerator, other.value.denominator);
+    }
+
     public Cell(int val) {
         value = new Fraction(val);
     }
@@ -110,6 +119,11 @@ public class Cell {
     }
 
     public Cell add(int r, int c, Cell A, Cell B) {
+        //return new Cell(r, c, A.value, B.value);
+        return null;
+    }
+
+    public Cell multiply(int r, int c, Cell A, Cell B) {
         //return new Cell(r, c, A.value, B.value);
         return null;
     }
