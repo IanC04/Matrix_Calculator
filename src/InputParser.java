@@ -27,6 +27,7 @@ public class InputParser {
 
     /**
      * Reads the matrices file and creates the matrices.
+     *
      * @param file File to read the matrix data from.
      * @throws FileNotFoundException if the file is not found.
      */
@@ -47,6 +48,7 @@ public class InputParser {
 
     /**
      * Creates a single matrix based on a single line in the file.
+     *
      * @param line line of square-bracketed values to assign to a matrix.
      */
     void createMatrix(String line) {
@@ -63,9 +65,9 @@ public class InputParser {
                 String cell = lineScanner.next();
                 if (cell.contains("/")) {
                     String[] frac = cell.split("/");
-                    mat.setCell(i, j, new Cell(Integer.parseInt(frac[0]), Integer.parseInt(frac[1])));
+                    mat.setMatrixValue(i, j, new Fraction(Integer.parseInt(frac[0]), Integer.parseInt(frac[1])));
                 } else {
-                    mat.setCell(i, j, new Cell(Integer.parseInt(cell)));
+                    mat.setMatrixValue(i, j, new Fraction(Integer.parseInt(cell)));
                 }
             }
         }

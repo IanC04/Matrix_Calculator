@@ -31,28 +31,64 @@ public class MatrixOperations {
         }
         Matrix mat = new Matrix(rowA, colB);
         for (int i = 0; i < rowA; i++) {
-            for(int k = 0; k < colB; k++) {
-                Cell sum = new Cell();
+            for (int k = 0; k < colB; k++) {
                 for (int j = 0; j < colA; j++) {
-                    sum = sum.add(A.grid[i][j].multiply(B.grid[j][k]));
+                    mat.grid[i][j] = mat.grid[i][j].add(A.grid[i][k].multiply(B.grid[k][j]));
                 }
-                mat.grid[i][k] = sum;
             }
         }
         return mat;
     }
 
     public static Matrix getRREF(Matrix A) {
-        System.out.println("Unimplemented");
-        return null;
         Matrix mat = new Matrix(A);
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid.length; j++) {
+        for (int i = 0; i < mat.grid.length; i++) {
+            Fraction pivot = mat.grid[i][i];
+            for (int j = 0; j < mat.grid.length; j++) {
+                mat.grid[i][j] = mat.grid[i][j].divide(pivot);
             }
         }
+        return mat;
     }
 
-    public static int getDeterminant(Matrix A) {
-        return 0;
+    public static Fraction getDeterminant(Matrix A) {
+        if (A.grid.length != A.grid[0].length) {
+            System.err.printf("Cannot get determinant of non-square matrix %dx%d\n", A.grid.length, A.grid[0].length);
+            throw new IllegalArgumentException("Matrix is not square");
+        }
+        return getDeterminant(A, true);
+    }
+
+    /**
+     * Recursive method to get the determinant of a matrix using cofactor expansion.
+     * Currently wrong. TODO: Fix this.
+     *
+     * @param A
+     * @param even
+     * @return
+     */
+    private static Fraction getDeterminant(Matrix A, boolean even) {
+        if (A.grid.length != A.grid[0].length) {
+            System.err.printf("Cannot get determinant of non-square matrix %dx%d\n", A.grid.length, A.grid[0].length);
+            throw new IllegalArgumentException("Matrix is not square");
+        }
+        if (A.grid.length == 2) {
+            return A.grid[0][0].multiply(A.grid[1][1]).subtract(A.grid[0][1].multiply(A.grid[1][0]));
+        }
+        Fraction det = new Fraction();
+        for (int i = 0; i < A.grid.length; i++) {
+            Matrix subMatrix = new Matrix(A.grid.length - 1, A.grid[0].length - 1);
+            for (int j = 0; j < A.grid.length; j++) {
+                for (int k = 0; k < A.grid.length; k++) {
+                    if (k < i) {
+                        subMatrix.grid[j - 1][k] = A.grid[j][k];
+                    } else if (k > i) {
+                        subMatrix.grid[j - 1][k - 1] = A.grid[j][k];
+                    }
+                }
+            }
+            det = det.add(A.grid[0][i].multiply(getDeterminant(subMatrix, !even)));
+        }
+        return det;
     }
 }

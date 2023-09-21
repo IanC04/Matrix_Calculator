@@ -3,7 +3,7 @@ import java.util.Scanner;
 public class Matrix {
 
 
-    final Cell[][] grid;
+    final Fraction[][] grid;
 
     int rows, columns;
     String name;
@@ -16,10 +16,10 @@ public class Matrix {
         this.rows = rows;
         this.columns = cols;
         this.name = name;
-        grid = new Cell[rows][cols];
+        grid = new Fraction[rows][cols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                grid[i][j] = new Cell();
+                grid[i][j] = new Fraction();
             }
         }
     }
@@ -32,52 +32,37 @@ public class Matrix {
      */
     public Matrix(Matrix other) {
         this.rows = other.rows;
-        columns = other.columns;
-        grid = new Cell[rows][columns];
-        for (int i = 0; i < rows; i++) {
-            System.arraycopy(other.grid[i], 0, grid[i], 0, columns);
-        }
-    }
-
-    public Matrix(Scanner s) {
-        System.out.print("How many rows: ");
-        this.rows = s.nextInt();
-        System.out.print("How many columns: ");
-        columns = s.nextInt();
-        s.nextLine();
-        grid = new Cell[rows][columns];
-        for (int i = 0; i < rows; i++) {
-            System.out.println("Enter numbers of " + i + " row seperated by " + "spaces: ");
-            Scanner line = new Scanner(s.nextLine());
-            line.useDelimiter(" +");
-            for (int j = 0; j < columns; j++) {
-                grid[i][j] = new Cell(line.next());
+        this.columns = other.columns;
+        this.name = other.name;
+        this.grid = new Fraction[this.rows][this.columns];
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.columns; j++) {
+                this.grid[i][j] = new Fraction(other.grid[i][j]);
             }
-            printMatrix(i + 1);
         }
     }
 
-    public boolean setCell(int row, int col, Cell cell) {
+    public void setMatrixValue(int row, int col, Fraction value) {
         if (row >= 0 && col >= 0 && row < rows && col < columns) {
-            grid[row][col] = cell;
-            return true;
+            grid[row][col] = new Fraction(value);
+        } else {
+            throw new IllegalArgumentException("Row or column out of bounds");
         }
-        return false;
     }
 
-    public Cell getCell(int row, int col) {
+    public Fraction getMatrixValue(int row, int col) {
         return grid[row][col];
     }
 
-    /**
-     * Prints the matrix from row 0 to rowind exclusive
-     *
-     * @param end
-     */
-    public void printMatrix(int end) {
+    public String printMatrix() {
+        return this.toString();
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
         byte widest = 0;
-        for (int i = 0; i < end; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
                 byte width = (byte) grid[i][j].toString().length();
                 if (width > widest) {
                     widest = width;
@@ -85,22 +70,13 @@ public class Matrix {
             }
         }
         widest++;
-        for (int i = 0; i < end; i++) {
-            System.out.print('|');
-            for (int j = 0; j < grid[i].length; j++) {
-                System.out.printf("%" + widest + "s|", grid[i][j]);
+        for (int i = 0; i < rows; i++) {
+            sb.append('|');
+            for (int j = 0; j < columns; j++) {
+                sb.append(String.format("%" + widest + "s|", grid[i][j]));
             }
-            System.out.println();
+            sb.append('\n');
         }
-        System.out.println();
-    }
-
-    public void printMatrix() {
-        printMatrix(grid.length);
-    }
-
-    public String toString() {
-        printMatrix();
-        return null;
+        return sb.toString();
     }
 }
