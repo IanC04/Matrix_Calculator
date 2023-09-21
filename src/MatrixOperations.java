@@ -40,6 +40,12 @@ public class MatrixOperations {
         return mat;
     }
 
+    /**
+     * Gets the reduced row echelon form of a matrix.
+     * TODO: Unfinished
+     * @param A
+     * @return
+     */
     public static Matrix getRREF(Matrix A) {
         Matrix mat = new Matrix(A);
         for (int i = 0; i < mat.grid.length; i++) {
@@ -49,6 +55,33 @@ public class MatrixOperations {
             }
         }
         return mat;
+    }
+
+    /**
+     * Gets the reduced echelon form of a matrix.
+     * TODO: Unfinished
+     * @param A
+     * @return
+     */
+    public static Matrix getREF(Matrix A) {
+        Matrix mat = new Matrix(A);
+        for (int i = 0; i < mat.grid.length; i++) {
+            Fraction pivot = mat.grid[i][i];
+            for (int j = 0; j < mat.grid.length; j++) {
+                mat.grid[i][j] = mat.grid[i][j].divide(pivot);
+            }
+        }
+        return mat;
+    }
+
+    /**
+     * Gets the inverse of a matrix.
+     * TODO: Unfinished
+     * @param A
+     * @return
+     */
+    public static Matrix getInverse(Matrix A) {
+        return null;
     }
 
     public static Fraction getDeterminant(Matrix A) {
