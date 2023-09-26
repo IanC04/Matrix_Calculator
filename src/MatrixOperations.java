@@ -43,6 +43,7 @@ public class MatrixOperations {
     /**
      * Gets the reduced row echelon form of a matrix.
      * TODO: Unfinished
+     *
      * @param A
      * @return
      */
@@ -60,6 +61,7 @@ public class MatrixOperations {
     /**
      * Gets the reduced echelon form of a matrix.
      * TODO: Unfinished
+     *
      * @param A
      * @return
      */
@@ -77,6 +79,7 @@ public class MatrixOperations {
     /**
      * Gets the inverse of a matrix.
      * TODO: Unfinished
+     *
      * @param A
      * @return
      */
@@ -84,43 +87,54 @@ public class MatrixOperations {
         return null;
     }
 
-    public static Fraction getDeterminant(Matrix A) {
-        if (A.grid.length != A.grid[0].length) {
-            System.err.printf("Cannot get determinant of non-square matrix %dx%d\n", A.grid.length, A.grid[0].length);
-            throw new IllegalArgumentException("Matrix is not square");
-        }
-        return getDeterminant(A, true);
-    }
-
     /**
      * Recursive method to get the determinant of a matrix using cofactor expansion.
      * Currently wrong. TODO: Fix this.
      *
+     * @param A matrix to calculate determinant of
+     * @return the value of the determinant
+     */
+    public static Fraction getDeterminant(Matrix A) {
+        if (A.grid.length != A.grid[0].length) {
+            System.err.printf("Cannot get determinant of non-square matrix %dx%d\n%s\n", A.grid.length,
+                    A.grid[0].length, A);
+            throw new IllegalArgumentException("Matrix is not square");
+        }
+        return getSubDeterminant(A);
+    }
+
+    /**
+     *
      * @param A
-     * @param even
      * @return
      */
-    private static Fraction getDeterminant(Matrix A, boolean even) {
+    private static Fraction getSubDeterminant(Matrix A) {
         if (A.grid.length != A.grid[0].length) {
-            System.err.printf("Cannot get determinant of non-square matrix %dx%d\n", A.grid.length, A.grid[0].length);
-            throw new IllegalArgumentException("Matrix is not square");
+            System.err.printf("Couldn't resolve matrix %s\n", A);
+            throw new IllegalStateException("Calculation error in solving determinant");
         }
         if (A.grid.length == 2) {
             return A.grid[0][0].multiply(A.grid[1][1]).subtract(A.grid[0][1].multiply(A.grid[1][0]));
         }
         Fraction det = new Fraction();
+        boolean sign = true;
         for (int i = 0; i < A.grid.length; i++) {
-            Matrix subMatrix = new Matrix(A.grid.length - 1, A.grid[0].length - 1);
-            for (int j = 0; j < A.grid.length; j++) {
+            Matrix sub = new Matrix(A.grid.length - 1, A.grid.length - 1);
+            for (int j = 1; j < A.grid.length; j++) {
                 for (int k = 0; k < A.grid.length; k++) {
                     if (k < i) {
-                        subMatrix.grid[j - 1][k] = A.grid[j][k];
+                        sub.grid[j - 1][k] = A.grid[j][k];
                     } else if (k > i) {
-                        subMatrix.grid[j - 1][k - 1] = A.grid[j][k];
+                        sub.grid[j - 1][k - 1] = A.grid[j][k];
                     }
                 }
             }
-            det = det.add(A.grid[0][i].multiply(getDeterminant(subMatrix, !even)));
+            Fraction result = A.grid[0][i].multiply(getSubDeterminant(sub));
+            if(!sign) {
+                result.invertSign();
+            }
+            det = det.add(result);
+            sign = !sign;
         }
         return det;
     }

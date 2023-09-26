@@ -1,3 +1,9 @@
 D = A + B
 D = D + A
 E = D * D
+DISPLAY E
+E = E - E
+DISPLAY A
+DISPLAY B
+DISPLAY D
+DISPLAY E

@@ -1,5 +1,5 @@
 public enum Flags {
-    DISPLAY(1), WRITE(2), READ(4);
+    DISPLAY(1), READ(2), WRITE(4);
 
     private final int val;
 

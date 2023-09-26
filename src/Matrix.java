@@ -1,12 +1,11 @@
-import java.util.Scanner;
-
 public class Matrix {
 
 
     final Fraction[][] grid;
 
-    int rows, columns;
-    String name;
+    private final int rows;
+    private final int columns;
+    private String name;
 
     public Matrix(int rows, int cols) {
         this(rows, cols, "");
@@ -16,7 +15,7 @@ public class Matrix {
         this.rows = rows;
         this.columns = cols;
         this.name = name;
-        grid = new Fraction[rows][cols];
+        this.grid = new Fraction[rows][cols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 grid[i][j] = new Fraction();
@@ -28,7 +27,7 @@ public class Matrix {
     /**
      * Copies other matrix to this matrix
      *
-     * @param other
+     * @param other other matrix to copy from
      */
     public Matrix(Matrix other) {
         this.rows = other.rows;
@@ -50,16 +49,21 @@ public class Matrix {
         }
     }
 
+    public void setName(String name) {
+        if(this.name == null || this.name.isBlank()) {
+            this.name = name;
+        } else if(!this.name.equals(name)) {
+            throw new IllegalArgumentException("Matrix name already set to " + this.name);
+        }
+    }
+
     public Fraction getMatrixValue(int row, int col) {
         return grid[row][col];
     }
 
-    public String printMatrix() {
-        return this.toString();
-    }
-
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append(name).append('\n');
         byte widest = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {

@@ -23,41 +23,56 @@ public class Command {
         this.line = line;
         this.tokens = line.split(" ");
         flags = EnumSet.noneOf(Flags.class);
-        if (line.contains("DISPLAY")) {
-            flags.add(Flags.DISPLAY);
-        }
-        if (line.contains("WRITE")) {
-            flags.add(Flags.WRITE);
-        }
-        if (line.contains("READ")) {
-            flags.add(Flags.READ);
-        }
         this.matrices = matrices;
         this.scalars = scalars;
-        int startIndex = 0;
-        for (int i = 0; i < this.tokens.length; i++) {
-            if (this.tokens[i].equals("=")) {
-                ASSIGNED_MATRIX_NAME = this.tokens[i - 1];
-                startIndex = i + 1;
-                break;
-            }
+        boolean hasFlags = getFlags();
+        int startIndex = hasFlags ? tokens.length - 1 : 0;
+        if (this.tokens.length > 2 && this.tokens[1].equals("=")) {
+            ASSIGNED_MATRIX_NAME = this.tokens[0];
+            startIndex = 2;
         }
 
         // For Debugging
-        this.flags.add(Flags.DISPLAY);
+        // this.flags.add(Flags.DISPLAY);
 
         this.tree = new Operation(startIndex, tokens.length);
     }
 
-    public Command(String line) {
-        this(line, null, null);
+    private boolean getFlags() {
+        if (tokens.length == 1) {
+            return false;
+        }
+        for (int i = tokens.length - 2; i >= 0; i--) {
+            if (tokens[i].equals("DISPLAY")) {
+                this.flags.add(Flags.DISPLAY);
+            }
+            if (tokens[i].equals("READ")) {
+                this.flags.add(Flags.READ);
+            }
+            if (tokens[i].equals("WRITE")) {
+                this.flags.add(Flags.WRITE);
+            }
+        }
+        boolean hasFlags = !flags.isEmpty();
+        if (hasFlags) {
+            ASSIGNED_MATRIX_NAME = tokens[tokens.length - 1];
+            return true;
+        }
+        return false;
+    }
+
+    public void start() {
+        if (tree != null) {
+            tree.start();
+        }
     }
 
     private class Operation {
 
+
         private Matrix result;
 
-        private String resultName;
+        private final String resultName;
 
         private String operator;
 
@@ -66,17 +81,17 @@ public class Command {
         private Operation left, right;
 
         /**
-         * Parses the tokens from start inclusive to end exclusive.
+         * Parses the tokens from into subtrees with operators as middle nodes and operands as leaves.
          *
-         * @param start
-         * @param end
+         * @param start inclusive
+         * @param end   exclusive
          */
         private Operation(int start, int end) {
             if (start >= end) {
                 throw new IllegalArgumentException("Start must be less than end");
             }
             if (start == end - 1) {
-                result = matrices.get(tokens[start]);
+                // result = matrices.get(tokens[start]);
                 resultName = tokens[start];
                 return;
             }
@@ -122,13 +137,11 @@ public class Command {
         }
 
         private void start() {
-            if (left == null || right == null) {
-                throw new IllegalArgumentException("Must have at least one operation.");
-            }
             calculate();
 
             if (ASSIGNED_MATRIX_NAME != null) {
                 matrices.put(ASSIGNED_MATRIX_NAME, result);
+                result.setName(ASSIGNED_MATRIX_NAME);
             } else if (ASSIGNED_SCALAR_NAME != null) {
                 scalars.put(ASSIGNED_SCALAR_NAME, result.getMatrixValue(0, 0));
             }
@@ -143,46 +156,40 @@ public class Command {
         }
 
         private Matrix calculate() {
-            if (this.result == null) {
-
-                if(resultName != null) {
-                    this.result = matrices.get(resultName);
-                    if(this.result == null) {
-                        throw new IllegalStateException("Matrix " + resultName + " not found.");
-                    }
-                    return this.result;
+            if (resultName != null) {
+                this.result = matrices.get(resultName);
+                if (this.result == null) {
+                    throw new IllegalStateException("Matrix " + resultName + " not found.");
                 }
+                return this.result;
+            }
 
 
-                Matrix leftResult = left.calculate();
-                Matrix rightResult = right.calculate();
-                switch (operator) {
-                    case "+":
-                        this.result = MatrixOperations.add(leftResult, rightResult);
-                        break;
-                    case "-":
-                        this.result = MatrixOperations.subtract(leftResult, rightResult);
-                        break;
-                    case "*":
-                        this.result = MatrixOperations.multiply(leftResult, rightResult);
-                        break;
-                    case "=":
-                        this.result = rightResult;
-                        matrices.put(ASSIGNED_MATRIX_NAME, this.result);
-                        break;
-                    default:
-                        System.err.println("Couldn't parse operation: " + line);
-                        System.err.println("Exiting...");
-                        System.exit(1);
-                        break;
-                }
+            Matrix leftResult = left.calculate();
+            Matrix rightResult = right.calculate();
+            switch (operator) {
+                case "+":
+                    this.result = MatrixOperations.add(leftResult, rightResult);
+                    break;
+                case "-":
+                    this.result = MatrixOperations.subtract(leftResult, rightResult);
+                    break;
+                case "*":
+                    this.result = MatrixOperations.multiply(leftResult, rightResult);
+                    break;
+                case "=":
+                    this.result = rightResult;
+                    matrices.put(ASSIGNED_MATRIX_NAME, this.result);
+                    break;
+                default:
+                    System.err.println("Couldn't parse operation: " + line);
+                    System.err.println("Exiting...");
+                    System.exit(1);
+                    break;
             }
 
             return this.result;
         }
-    }
 
-    public void start() {
-        tree.start();
     }
 }

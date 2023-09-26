@@ -11,5 +11,6 @@ public class Main {
         // System.out.println("Type y to start.");
         // s.next();
         input.start();
+        System.out.println(MatrixOperations.getDeterminant(matrices.get("F")));
     }
 }

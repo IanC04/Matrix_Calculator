@@ -64,6 +64,10 @@ public class Fraction {
         return new Fraction(num, dem);
     }
 
+    public void invertSign() {
+        numerator = numerator * -1;
+    }
+
     private double getValDecimal() {
         return (double) numerator / denominator;
     }
