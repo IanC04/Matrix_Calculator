@@ -1,2 +1,3 @@
 D = A + B
 D = D + A
+E = D * D

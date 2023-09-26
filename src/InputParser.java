@@ -7,91 +7,11 @@ import java.util.regex.Pattern;
 
 public class InputParser {
 
-    private class OperationTree {
-        private enum ALL_FLAGS {
-            DISPLAY(1), PLACEHOLDER1(2), PLACEHOLDER2(4);
-
-            private final int val;
-
-            private ALL_FLAGS(int v) {
-                val = v;
-            }
-
-            private int getVal() {
-                return val;
-            }
-        }
-
-        private String line;
-        private String[] tokens;
-
-        private ALL_FLAGS flags;
-
-        private String ASSIGNED_MATRIX_NAME;
-        private String ASSIGNED_SCALAR_NAME;
-
-        private OperationTree(String line) {
-            this.line = line;
-            this.flags = ALL_FLAGS.DISPLAY;
-            parseLine();
-        }
-
-        private void parseLine() {
-            String[] tokens = line.split(" ");
-            this.tokens = tokens;
-        }
-
-        private void start() {
-            if (tokens[1].equals("=")) {
-                ASSIGNED_MATRIX_NAME = tokens[0];
-            }
-
-            if (tokens[2].startsWith("RREF(")) {
-                matrices.put(ASSIGNED_MATRIX_NAME, MatrixOperations.getRREF(matrices.get(tokens[2])));
-            } else if (tokens[2].startsWith("REF(")) {
-                matrices.put(ASSIGNED_MATRIX_NAME, MatrixOperations.getREF(matrices.get(tokens[2])));
-            } else if (tokens[2].startsWith("DET(")) {
-                scalars.put(ASSIGNED_SCALAR_NAME, MatrixOperations.getDeterminant(matrices.get(tokens[2])));
-            } else if (tokens[2].startsWith("INV(")) {
-                matrices.put(ASSIGNED_MATRIX_NAME, MatrixOperations.getInverse(matrices.get(tokens[2])));
-            } else {
-
-                switch (tokens[3]) {
-                    case "+":
-                        matrices.put(ASSIGNED_MATRIX_NAME, MatrixOperations.add(matrices.get(tokens[2]),
-                                matrices.get(tokens[4])));
-                        break;
-                    case "-":
-                        matrices.put(ASSIGNED_MATRIX_NAME, MatrixOperations.subtract(matrices.get(tokens[2]),
-                                matrices.get(tokens[4])));
-                        break;
-                    case "*":
-                        matrices.put(ASSIGNED_MATRIX_NAME, MatrixOperations.multiply(matrices.get(tokens[2]),
-                                matrices.get(tokens[4])));
-                        break;
-                    default:
-                        System.err.println("Couldn't parse operation: " + line);
-                        System.err.println("Exiting...");
-                        System.exit(1);
-                        break;
-                }
-            }
-
-            if ((flags.getVal() & ALL_FLAGS.DISPLAY.getVal()) != 0) {
-                if (matrices.containsKey(ASSIGNED_MATRIX_NAME)) {
-                    System.out.println(matrices.get(ASSIGNED_MATRIX_NAME));
-                } else if (scalars.containsKey(ASSIGNED_SCALAR_NAME)) {
-                    System.out.println(scalars.get(ASSIGNED_SCALAR_NAME));
-                }
-            }
-        }
-    }
-
     // Stores all the matrices needed to compute.
     private final HashMap<String, Matrix> matrices;
 
     // Stores all the operations in the order they appear in the dat file.
-    private final ArrayList<OperationTree> operations;
+    private ArrayList<Command> commands;
 
     // Stores all the scalars when computed or provided.
     private final HashMap<String, Fraction> scalars;
@@ -113,9 +33,9 @@ public class InputParser {
         file = new File(files[0]);
         createMatrices(file);
 
-        operations = new ArrayList<>();
+        commands = new ArrayList<>();
         file = new File(files[1]);
-        createOperations(file);
+        createCommands(file);
     }
 
     /**
@@ -170,20 +90,29 @@ public class InputParser {
         }
     }
 
+    /**
+     * Gets a matrix by name.
+     * @param name
+     * @return
+     */
     Matrix getMatrix(String name) {
-        return matrices.get(name);
+        return matrices.getOrDefault(name, null);
     }
 
+    /**
+     * Gets all the matrices.
+     * @return
+     */
     HashMap<String, Matrix> getMatrices() {
         return matrices;
     }
 
-    private void createOperations(File file) throws FileNotFoundException {
+    private void createCommands(File file) throws FileNotFoundException {
         Scanner s = new Scanner(file);
         while (s.hasNextLine()) {
             String line = s.nextLine().replaceAll("[\\s\\[\\]]+", " ");
             if (OPERATION_FILE_LINE_FORMAT.matcher(line).matches()) {
-                createOperation(line);
+                createCommand(line);
             } else {
                 System.err.println("Invalid operation: " + line + ". Operation must be in the form: [RESULT] [=] " +
                         "[OP1] " +
@@ -195,17 +124,21 @@ public class InputParser {
         }
     }
 
-    private void createOperation(String line) {
-        OperationTree operation = new OperationTree(line);
-        this.operations.add(operation);
+    private void createCommand(String line) {
+        Command command = new Command(line, matrices, scalars);
+        this.commands.add(command);
     }
 
-    public String getOperations() {
-        return operations.toString();
+    public String getCommands() {
+        return commands.toString();
+    }
+
+    public String getCommand(int index) {
+        return commands.get(index).toString();
     }
 
     public void start() {
-        for (OperationTree op : operations) {
+        for (Command op : commands) {
             op.start();
         }
     }
