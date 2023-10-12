@@ -1,14 +1,6 @@
-D = A + B
-D = D - A
-E = D * D
+E = REF B
 DISPLAY E
-E = E - E
-DISPLAY A
-DISPLAY B
+D = A * REF B
 DISPLAY D
-DISPLAY E
-G = DET E
-H = D * D * D * D
-DISPLAY H
-H = DET H
-DISPLAY H
+B = B * B * B * B * B * B * B * B
+DISPLAY B

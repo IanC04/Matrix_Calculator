@@ -3,17 +3,17 @@
  * TODO: Convert all operations into using longs
  */
 public class Fraction {
-    private int numerator, denominator;
+    private long numerator, denominator;
 
     public Fraction() {
         this(0);
     }
 
-    public Fraction(int integral) {
+    public Fraction(long integral) {
         this(integral, 1);
     }
 
-    public Fraction(int num, int den) {
+    public Fraction(long num, long den) {
         numerator = num;
         denominator = den;
         simplify(numerator, denominator);
@@ -30,7 +30,7 @@ public class Fraction {
         this.denominator = other.denominator;
     }
 
-    private void simplify(int a, int b) {
+    private void simplify(long a, long b) {
         if (b != 0) {
             simplify(b, a % b);
             return;
@@ -40,19 +40,19 @@ public class Fraction {
     }
 
     public Fraction add(Fraction other) {
-        int num = numerator * other.denominator + other.numerator * denominator, dem =
+        long num = numerator * other.denominator + other.numerator * denominator, dem =
                 denominator * other.denominator;
         return new Fraction(num, dem);
     }
 
     public Fraction subtract(Fraction other) {
-        int num = numerator * other.denominator - other.numerator * denominator, dem =
+        long num = numerator * other.denominator - other.numerator * denominator, dem =
                 denominator * other.denominator;
         return new Fraction(num, dem);
     }
 
     public Fraction multiply(Fraction other) {
-        int num = numerator * other.numerator, dem = denominator * other.denominator;
+        long num = numerator * other.numerator, dem = denominator * other.denominator;
         return new Fraction(num, dem);
     }
 
@@ -61,7 +61,7 @@ public class Fraction {
             System.err.printf("%s can't be divided by %s", this, other);
             throw new ArithmeticException("Cannot divide by zero");
         }
-        int num = numerator * other.denominator, dem = denominator * other.numerator;
+        long num = numerator * other.denominator, dem = denominator * other.numerator;
         return new Fraction(num, dem);
     }
 
@@ -73,8 +73,8 @@ public class Fraction {
         return (double) numerator / denominator;
     }
 
-    private int[] getValFraction() {
-        return new int[]{numerator, denominator};
+    private long[] getValFraction() {
+        return new long[]{numerator, denominator};
     }
 
     public Matrix toMatrix() {
@@ -83,8 +83,8 @@ public class Fraction {
 
     public boolean equals(Object other) {
         if (other instanceof Fraction) {
-            int[] thisFrac = this.getValFraction();
-            int[] otherFrac = ((Fraction) other).getValFraction();
+            long[] thisFrac = this.getValFraction();
+            long[] otherFrac = ((Fraction) other).getValFraction();
             return thisFrac[0] == otherFrac[0] && thisFrac[1] == otherFrac[1];
         }
         if (other instanceof Number) {
@@ -95,8 +95,8 @@ public class Fraction {
 
     public String toString() {
         if (numerator == 0 || denominator == 1) {
-            return Integer.toString(numerator);
+            return Long.toString(numerator);
         }
-        return String.format("%d/%d\n", numerator, denominator);
+        return String.format("%d/%d", numerator, denominator);
     }
 }

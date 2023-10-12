@@ -35,13 +35,23 @@ public class Matrix {
 
     /**
      * Copies other matrix to this matrix
+     * Ensures name is null
      *
      * @param other other matrix to copy from
      */
     public Matrix(Matrix other) {
+        this(other, null);
+    }
+
+    /**
+     * Copies other matrix to this matrix
+     *
+     * @param other other matrix to copy from
+     */
+    private Matrix(Matrix other, String name) {
         this.rows = other.rows;
         this.columns = other.columns;
-        this.name = other.name;
+        this.name = name;
         this.grid = new Fraction[this.rows][this.columns];
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.columns; j++) {
@@ -82,7 +92,10 @@ public class Matrix {
                 }
             }
         }
-        widest++;
+
+        // Extra space inside each cell
+        ++widest;
+
         for (int i = 0; i < rows; i++) {
             sb.append('|');
             for (int j = 0; j < columns; j++) {

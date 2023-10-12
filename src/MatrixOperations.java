@@ -51,13 +51,9 @@ public class MatrixOperations {
      * @return
      */
     public static Matrix getRREF(Matrix A) {
-        Matrix mat = new Matrix(A);
-        for (int i = 0; i < mat.grid.length; i++) {
-            Fraction pivot = mat.grid[i][i];
-            for (int j = 0; j < mat.grid.length; j++) {
-                mat.grid[i][j] = mat.grid[i][j].divide(pivot);
-            }
-        }
+        Matrix mat = getREF(A);
+
+        normalizePivots(mat);
         return mat;
     }
 
@@ -71,24 +67,25 @@ public class MatrixOperations {
     public static Matrix getREF(Matrix A) {
         Matrix mat = new Matrix(A);
         int pivotColumn = 0;
-        for (int i = 0; i < mat.grid.length; i++) {
+        for (int i = 0; i < mat.grid.length && pivotColumn < mat.grid[i].length; i++) {
             Fraction pivot = mat.grid[i][pivotColumn];
             if (pivot.equals(ZERO)) {
                 // Looks bad, refactor later
-                boolean hasPivot = swapPivot(mat, i, i);
+                boolean hasPivot = swapPivot(mat, i, pivotColumn);
                 if (!hasPivot) {
                     ++pivotColumn;
                     --i;
                     continue;
                 }
             }
-            for (int j = pivotColumn + 1; j < mat.grid.length; j++) {
+            for (int j = i + 1; j < mat.grid.length; j++) {
                 Fraction divisionRatio = mat.grid[j][pivotColumn].divide(pivot);
                 for (int k = pivotColumn; k < mat.grid[j].length; k++) {
-                    mat.grid[j][k] = mat.grid[j][k].subtract(divisionRatio.multiply(pivot));
+                    mat.grid[j][k] = mat.grid[j][k].subtract(divisionRatio.multiply(mat.grid[i][k]));
                 }
             }
         }
+
         return mat;
     }
 
@@ -119,6 +116,29 @@ public class MatrixOperations {
             Fraction[] temp = A.grid[row1];
             A.grid[row1] = A.grid[row2];
             A.grid[row2] = temp;
+        }
+    }
+
+    private static void normalizePivots(Matrix A) {
+        int pivotColumn = 0;
+        for (int i = 0; i < A.grid.length && pivotColumn < A.grid[i].length; i++) {
+            Fraction pivot = A.grid[i][pivotColumn];
+            if (pivot.equals(ZERO)) {
+                ++pivotColumn;
+                --i;
+                continue;
+            }
+            divideRow(A, i, pivot);
+        }
+    }
+
+    private static void divideRow(Matrix A, int row, Fraction denominator) {
+        if (denominator.equals(ZERO)) {
+            System.err.println("Cannot divide by zero");
+            throw new IllegalArgumentException("Cannot divide by zero");
+        }
+        for (int i = 0; i < A.grid[row].length; i++) {
+            A.grid[row][i] = A.grid[row][i].divide(denominator);
         }
     }
 
