@@ -1,6 +1,5 @@
 /**
- * Fraction class that implements immutable fractions
- * TODO: Convert all operations into using longs
+ * Fraction class that implements immutable fractions.
  */
 public class Fraction {
     private long numerator, denominator;

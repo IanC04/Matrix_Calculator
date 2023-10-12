@@ -59,7 +59,6 @@ public class MatrixOperations {
 
     /**
      * Gets the reduced echelon form of a matrix.
-     * TODO: Unfinished
      *
      * @param A
      * @return the upper-triangular matrix of A
