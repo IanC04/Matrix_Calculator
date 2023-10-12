@@ -1,15 +1,20 @@
+import java.io.File;
 import java.util.EnumSet;
 import java.util.HashMap;
 
 public class Command {
 
     private String ASSIGNED_MATRIX_NAME;
-    private String ASSIGNED_SCALAR_NAME;
+
+    // Not implemented yet, currently scalars are 1x1 matrices
+    // private String ASSIGNED_SCALAR_NAME;
 
     private final String line;
     private final String[] tokens;
 
     private final EnumSet<Flags> flags;
+
+    private File inputOrOutputFile;
 
     private final Operation tree;
 
@@ -19,46 +24,61 @@ public class Command {
 
     public Command(String line, HashMap<String, Matrix> matrices, HashMap<String, Fraction> scalars) {
         this.ASSIGNED_MATRIX_NAME = null;
-        this.ASSIGNED_SCALAR_NAME = null;
+        // this.ASSIGNED_SCALAR_NAME = null;
         this.line = line;
         this.tokens = line.split(" ");
         flags = EnumSet.noneOf(Flags.class);
         this.matrices = matrices;
         this.scalars = scalars;
-        boolean hasFlags = getFlags();
-        int startIndex = hasFlags ? tokens.length - 1 : 0;
-        if (this.tokens.length > 2 && this.tokens[1].equals("=")) {
-            ASSIGNED_MATRIX_NAME = this.tokens[0];
-            startIndex = 2;
+        boolean flagLine = getFlags();
+        int startIndex = flagLine ? tokens.length - 1 : 0;
+        if (!flagLine) {
+            if (this.tokens.length > 2 && this.tokens[1].equals("=")) {
+                startIndex = 2;
+                /*if (this.tokens.length > 3 && this.tokens[2].equals("DET")) {
+                    ASSIGNED_SCALAR_NAME = this.tokens[0];
+                } else {
+                }*/
+                ASSIGNED_MATRIX_NAME = this.tokens[0];
+            }
         }
 
         // For Debugging
         // this.flags.add(Flags.DISPLAY);
 
         this.tree = new Operation(startIndex, tokens.length);
+        /*if (ASSIGNED_SCALAR_NAME != null) {
+            this.tree.resultIsMatrix = false;
+        }*/
     }
 
+    /**
+     * Line of file MUST be pure flags then operands.
+     *
+     * @return if there are flags
+     */
     private boolean getFlags() {
-        if (tokens.length == 1) {
+        if (tokens.length < 2) {
             return false;
         }
-        for (int i = tokens.length - 2; i >= 0; i--) {
-            if (tokens[i].equals("DISPLAY")) {
+        switch (tokens[0]) {
+            case "DISPLAY":
                 this.flags.add(Flags.DISPLAY);
-            }
-            if (tokens[i].equals("READ")) {
+                break;
+            case "READ":
                 this.flags.add(Flags.READ);
-            }
-            if (tokens[i].equals("WRITE")) {
+                inputOrOutputFile = new File(tokens[1]);
+                break;
+            case "WRITE":
                 this.flags.add(Flags.WRITE);
-            }
+                inputOrOutputFile = new File(tokens[1]);
+                break;
         }
-        boolean hasFlags = !flags.isEmpty();
-        if (hasFlags) {
-            ASSIGNED_MATRIX_NAME = tokens[tokens.length - 1];
-            return true;
+
+        if (!flags.isEmpty()) {
+            this.ASSIGNED_MATRIX_NAME = tokens[tokens.length - 1];
         }
-        return false;
+        return !flags.isEmpty();
     }
 
     public void start() {
@@ -70,7 +90,9 @@ public class Command {
     private class Operation {
 
 
-        private Matrix result;
+        // private Fraction resultScalar;
+
+        private Matrix resultMatrix;
 
         private final String resultName;
 
@@ -98,88 +120,134 @@ public class Command {
             this.resultName = null;
             this.startIndex = start;
             this.endIndex = end;
-            int split = getOperator();
+            int[] indexAndSpecial = getOperator();
+            int split = indexAndSpecial[0];
+            if (!(indexAndSpecial[1] == 1)) {
+                left = new Operation(start, split);
+            }
             operator = tokens[split];
-            left = new Operation(start, split);
             right = new Operation(split + 1, end);
         }
 
-        private int getOperator() {
-            int index = -1;
+        private int[] getOperator() {
+            // [0] = index | [1] = special function
+            int[] result = new int[2];
+            result[0] = -1;
+
             byte priority = Byte.MAX_VALUE; // 0 is highest priority
             for (int i = startIndex; i < endIndex; i++) {
                 switch (tokens[i]) {
+                    case "DET":
+                    case "REF":
+                    case "RREF":
+                    case "INV":
+                        if (priority > 16) {
+                            result[0] = i;
+                            result[1] = 1;
+                            priority = 16;
+                            // Immediately return since left-to-right and highest priority
+                            return result;
+                        }
+                        break;
                     case "*":
-                        if (priority > 2) {
-                            index = i;
-                            priority = 2;
+                        if (priority > 32) {
+                            result[0] = i;
+                            priority = 32;
                         }
                         break;
                     case "+":
                     case "-":
-                        if (priority > 3) {
-                            index = i;
-                            priority = 3;
+                        if (priority > 64) {
+                            result[0] = i;
+                            priority = 64;
                         }
                         break;
                     default:
-                        if (priority > 4) {
-                            index = i;
-                            priority = 4;
+                        if (priority == Byte.MAX_VALUE) {
+                            result[0] = i;
                         }
                 }
             }
-            return index;
+            return result;
         }
 
         private Matrix getResult() {
-            return result;
+            return resultMatrix;
         }
 
         private void start() {
             calculate();
 
             if (ASSIGNED_MATRIX_NAME != null) {
-                matrices.put(ASSIGNED_MATRIX_NAME, result);
-                result.setName(ASSIGNED_MATRIX_NAME);
-            } else if (ASSIGNED_SCALAR_NAME != null) {
-                scalars.put(ASSIGNED_SCALAR_NAME, result.getMatrixValue(0, 0));
-            }
+                matrices.put(ASSIGNED_MATRIX_NAME, resultMatrix);
+                resultMatrix.setName(ASSIGNED_MATRIX_NAME);
+            } /*else if (ASSIGNED_SCALAR_NAME != null) {
+                scalars.put(ASSIGNED_SCALAR_NAME, resultMatrix.getMatrixValue(0, 0));
+            }*/
 
             if (flags.contains(Flags.DISPLAY)) {
-                if (matrices.containsKey(ASSIGNED_MATRIX_NAME)) {
+                if (ASSIGNED_MATRIX_NAME != null) {
                     System.out.println(matrices.get(ASSIGNED_MATRIX_NAME));
-                } else if (scalars.containsKey(ASSIGNED_SCALAR_NAME)) {
-                    System.out.println(scalars.get(ASSIGNED_SCALAR_NAME));
                 }
+                /*if (ASSIGNED_SCALAR_NAME != null) {
+                    System.out.println(scalars.get(ASSIGNED_SCALAR_NAME));
+                }*/
             }
         }
 
         private Matrix calculate() {
             if (resultName != null) {
-                this.result = matrices.get(resultName);
-                if (this.result == null) {
+                // this.resultMatrix = scalars.get(resultName).toMatrix();
+                this.resultMatrix = matrices.get(resultName);
+                if (this.resultMatrix == null) {
                     throw new IllegalStateException("Matrix " + resultName + " not found.");
                 }
-                return this.result;
+                return this.resultMatrix;
+
             }
+            boolean isMatrix = true;
 
-
-            Matrix leftResult = left.calculate();
-            Matrix rightResult = right.calculate();
+            Matrix leftResult = null, rightResult = null;
+            if (left != null) {
+                leftResult = left.calculate();
+            }
+            if (right != null) {
+                rightResult = right.calculate();
+            }
             switch (operator) {
                 case "+":
-                    this.result = MatrixOperations.add(leftResult, rightResult);
+                    this.resultMatrix = MatrixOperations.add(leftResult, rightResult);
                     break;
                 case "-":
-                    this.result = MatrixOperations.subtract(leftResult, rightResult);
+                    this.resultMatrix = MatrixOperations.subtract(leftResult, rightResult);
                     break;
                 case "*":
-                    this.result = MatrixOperations.multiply(leftResult, rightResult);
+                    this.resultMatrix = MatrixOperations.multiply(leftResult, rightResult);
                     break;
                 case "=":
-                    this.result = rightResult;
-                    matrices.put(ASSIGNED_MATRIX_NAME, this.result);
+                    this.resultMatrix = rightResult;
+                    matrices.put(ASSIGNED_MATRIX_NAME, this.resultMatrix);
+                    break;
+                case "REF":
+                    this.resultMatrix = MatrixOperations.getREF(rightResult);
+                    matrices.put(ASSIGNED_MATRIX_NAME, this.resultMatrix);
+                    break;
+                case "RREF":
+                    this.resultMatrix = MatrixOperations.getRREF(rightResult);
+                    matrices.put(ASSIGNED_MATRIX_NAME, this.resultMatrix);
+                    break;
+                case "INV":
+                    this.resultMatrix = MatrixOperations.getInverse(rightResult);
+                    matrices.put(ASSIGNED_MATRIX_NAME, this.resultMatrix);
+                    break;
+                case "DET":
+                    isMatrix = false;
+                    // this.resultScalar = MatrixOperations.getDeterminant(rightResult);
+                    // scalars.put(ASSIGNED_SCALAR_NAME, this.resultScalar);
+
+                    // Fake scalar
+                    this.resultMatrix = MatrixOperations.getDeterminant(rightResult).toMatrix();
+                    matrices.put(ASSIGNED_MATRIX_NAME, this.resultMatrix);
                     break;
                 default:
                     System.err.println("Couldn't parse operation: " + line);
@@ -188,7 +256,7 @@ public class Command {
                     break;
             }
 
-            return this.result;
+            return this.resultMatrix;
         }
 
     }

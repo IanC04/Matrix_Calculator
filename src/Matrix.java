@@ -7,6 +7,15 @@ public class Matrix {
     private final int columns;
     private String name;
 
+    /**
+     * For transitions between scalars and matrices
+     * @param val
+     */
+    public Matrix(Fraction val) {
+        this(1, 1);
+        setMatrixValue(0, 0, val);
+    }
+
     public Matrix(int rows, int cols) {
         this(rows, cols, "");
     }

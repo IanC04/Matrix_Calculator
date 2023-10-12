@@ -1,5 +1,6 @@
 /**
  * Fraction class that implements immutable fractions
+ * TODO: Convert all operations into using longs
  */
 public class Fraction {
     private int numerator, denominator;
@@ -76,11 +77,18 @@ public class Fraction {
         return new int[]{numerator, denominator};
     }
 
+    public Matrix toMatrix() {
+        return new Matrix(this);
+    }
+
     public boolean equals(Object other) {
         if (other instanceof Fraction) {
             int[] thisFrac = this.getValFraction();
             int[] otherFrac = ((Fraction) other).getValFraction();
             return thisFrac[0] == otherFrac[0] && thisFrac[1] == otherFrac[1];
+        }
+        if (other instanceof Number) {
+            return this.getValDecimal() == ((Number) other).doubleValue();
         }
         return false;
     }

@@ -117,7 +117,7 @@ public class InputParser {
                 System.err.println("Invalid operation: " + line + ". Operation must be in the form: [RESULT] [=] " +
                         "[OP1] " +
                         "[OP] [OP2]... or [RESULT] [=] FUNC([OP1])...");
-                System.err.println("Valid operations are: +, -, *, RREF(), REF(), DET(), INV()");
+                System.err.println("Valid operations are: +, -, *, RREF, REF, DET, INV");
                 System.err.println("Exiting...");
                 System.exit(1);
             }

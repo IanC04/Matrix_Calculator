@@ -1,4 +1,7 @@
 public class MatrixOperations {
+
+    private static final Object ZERO = 0;
+
     public static Matrix add(Matrix A, Matrix B) {
         int row = B.grid.length, col = B.grid[0].length;
         Matrix mat = new Matrix(row, col);
@@ -63,17 +66,60 @@ public class MatrixOperations {
      * TODO: Unfinished
      *
      * @param A
-     * @return
+     * @return the upper-triangular matrix of A
      */
     public static Matrix getREF(Matrix A) {
         Matrix mat = new Matrix(A);
+        int pivotColumn = 0;
         for (int i = 0; i < mat.grid.length; i++) {
-            Fraction pivot = mat.grid[i][i];
-            for (int j = 0; j < mat.grid.length; j++) {
-                mat.grid[i][j] = mat.grid[i][j].divide(pivot);
+            Fraction pivot = mat.grid[i][pivotColumn];
+            if (pivot.equals(ZERO)) {
+                // Looks bad, refactor later
+                boolean hasPivot = swapPivot(mat, i, i);
+                if (!hasPivot) {
+                    ++pivotColumn;
+                    --i;
+                    continue;
+                }
+            }
+            for (int j = pivotColumn + 1; j < mat.grid.length; j++) {
+                Fraction divisionRatio = mat.grid[j][pivotColumn].divide(pivot);
+                for (int k = pivotColumn; k < mat.grid[j].length; k++) {
+                    mat.grid[j][k] = mat.grid[j][k].subtract(divisionRatio.multiply(pivot));
+                }
             }
         }
         return mat;
+    }
+
+    private static boolean swapPivot(Matrix A, int row, int col) {
+        for (int i = row + 1; i < A.grid.length; i++) {
+            if (!A.grid[i][col].equals(ZERO)) {
+                flipRows(A, row, i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Flips two rows in a matrix.
+     *
+     * @param A    matrix to flip rows
+     * @param row1
+     * @param row2
+     */
+    private static void flipRows(Matrix A, int row1, int row2) {
+        if (row1 < 0 || row1 >= A.grid.length || row2 < 0 || row2 >= A.grid.length) {
+            System.err.printf("Cannot flip rows %d and %d in matrix with dimensions (%dx%d)\n", row1, row2,
+                    A.grid.length, A.grid[0].length);
+            throw new IllegalArgumentException("Invalid row indices");
+        }
+        for (int i = 0; i < A.grid.length; i++) {
+            Fraction[] temp = A.grid[row1];
+            A.grid[row1] = A.grid[row2];
+            A.grid[row2] = temp;
+        }
     }
 
     /**
@@ -89,7 +135,6 @@ public class MatrixOperations {
 
     /**
      * Recursive method to get the determinant of a matrix using cofactor expansion.
-     * Currently wrong. TODO: Fix this.
      *
      * @param A matrix to calculate determinant of
      * @return the value of the determinant
@@ -104,7 +149,6 @@ public class MatrixOperations {
     }
 
     /**
-     *
      * @param A
      * @return
      */
@@ -130,7 +174,7 @@ public class MatrixOperations {
                 }
             }
             Fraction result = A.grid[0][i].multiply(getSubDeterminant(sub));
-            if(!sign) {
+            if (!sign) {
                 result.invertSign();
             }
             det = det.add(result);
